@@ -34,7 +34,7 @@ struct Binary {
     FormulaPtr left, right;
 };
 
-FormulaPtr ptr(const Formula& f) {
+inline FormulaPtr ptr(const Formula& f) {
     return std::make_shared<Formula>(f);
 }
 
@@ -48,7 +48,7 @@ T as(const FormulaPtr& f) {
     return std::get<T>(*f);
 }
 
-const char* symbol(Binary::Type type) {
+inline const char* symbol(Binary::Type type) {
     switch (type) {
         case Binary::And:  return "&";
         case Binary::Or:   return "|";
@@ -58,7 +58,7 @@ const char* symbol(Binary::Type type) {
     return "?"; 
 }
 
-std::string toString(const FormulaPtr& f) {
+inline std::string toString(const FormulaPtr& f) {
     if (is<False>(f)) return "⊥";
     if (is<True>(f))  return "⊤";
     if (is<Atom>(f))  return as<Atom>(f).name;

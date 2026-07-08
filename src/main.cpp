@@ -1,16 +1,27 @@
 #include <iostream>
 
 #include "formula.hpp"
+#include "parser.hpp"
 
 using namespace tablo;
 
 int main() {
-    FormulaPtr f = ptr(Binary{
-        Binary::And,
-        ptr(Atom{"p"}),
-        ptr(Not{ptr(Atom{"q"})}),
-    });
+    const char* primeri[] = {
+        "p & ~q",
+        "p & (q | ~p) -> r",
+        "~~p <-> p",
+        "a -> b -> c", 
+        "a & b | c & d",
+    };
 
-    std::cout << toString(f) << '\n';
+    for (const char* s : primeri) {
+        try {
+            FormulaPtr f = parse(s);
+            std::cout << s << "  =>  " << toString(f) << '\n';
+        } catch (const ParseError& e) {
+            std::cout << s << "  =>  GRESKA: " << e.what() << '\n';
+        }
+    }
+
     return 0;
 }
