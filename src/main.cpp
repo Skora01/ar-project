@@ -2,49 +2,52 @@
 
 #include "formula.hpp"
 #include "parser.hpp"
-#include "signed_formula.hpp"
+#include "tableau.hpp"
 
 using namespace tablo;
 
-static void printExpansion(const SignedFormula& sf) {
-    Expansion e = classify(sf);
-    std::cout << toString(sf) << "   =>   ";
-    switch (e.kind) {
-        case RuleKind::Alpha: {
-            std::cout << "ALFA: ";
-            for (const auto& c : e.components) std::cout << toString(c) << "  ";
-            break;
-        }
-        case RuleKind::Beta: {
-            std::cout << "BETA: ";
-            for (const auto& br : e.branches) {
-                std::cout << "{ ";
-                for (const auto& c : br) std::cout << toString(c) << " ";
-                std::cout << "} ";
-            }
-            break;
-        }
-        case RuleKind::Literal:   std::cout << "LITERAL"; break;
-        case RuleKind::Closed:    std::cout << "CLOSED BRANCH"; break;
-        case RuleKind::Satisfied: std::cout << "TRIVIALY CORRECT"; break;
+static std::string toString(const Valuation& v) {
+    std::string s = "{";
+    bool first = true;
+    for (const auto& [name, value] : v) {
+        if (!first) s += ", ";
+        s += name + "=" + (value ? "1" : "0");
+        first = false;
     }
+    return s + "}";
+}
+
+static void checkIsTautology(const std::string& s) {
+    FormulaPtr f = parse(s);
+    Valuation cex;
+    bool valid = isValid(f, &cex);
+    std::cout << s << "   =>   " << (valid ? "TAUTOLOGY" : "NOT TAUTOLOGY");
+    if (!valid) std::cout << ", counter example " << toString(cex);
+    std::cout << '\n';
+}
+
+static void checkIsSatisfiable(const std::string& s) {
+    FormulaPtr f = parse(s);
+    Valuation model;
+    bool sat = isSatisfiable(f, &model);
+    std::cout << s << "   =>   " << (sat ? "SAT" : "NOT SAT");
+    if (sat) std::cout << ", model " << toString(model);
     std::cout << '\n';
 }
 
 int main() {
-    FormulaPtr and_ = parse("a & b");
-    FormulaPtr impl = parse("a -> b");
-    FormulaPtr eq   = parse("a <-> b");
+    std::cout << "== Tautology ==\n";
+    checkIsTautology("(p -> q) -> (~q -> ~p)");   //tautologija
+    checkIsTautology("p | ~p");                    //  tautologija
+    checkIsTautology("p -> q");                     // nije: kontramodel p=1,q=0
+    checkIsTautology("(a | (b & c)) <-> ((a | b) & (a | c))");  // tautologija
+    checkIsTautology("p | true");                   // tautologija
 
-    printExpansion(T(and_));   
-    printExpansion(F(and_));   
-    printExpansion(T(impl));   
-    printExpansion(F(impl));   
-    printExpansion(T(eq));     
-    printExpansion(F(eq));     
-    printExpansion(T(parse("~a")));   
-    printExpansion(T(parse("p")));    
-    printExpansion(F(parse("true"))); 
+    std::cout << "\n== SAT ==\n";
+    checkIsSatisfiable("p & ~p");                 // nezadovoljiva
+    checkIsSatisfiable("(p -> q) & p & ~q");      // nezadovoljiva
+    checkIsSatisfiable("(p | q) & (~p | r)");     // zadovoljiva p = 1 r = 1
+    checkIsSatisfiable("p -> false");             // zadovoljiva p = 0
 
     return 0;
 }
