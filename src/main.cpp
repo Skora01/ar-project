@@ -49,5 +49,11 @@ int main() {
     checkIsSatisfiable("(p | q) & (~p | r)");     // zadovoljiva p = 1 r = 1
     checkIsSatisfiable("p -> false");             // zadovoljiva p = 0
 
+    std::cout << "\n== Tablo stablo (valjanost kontrapozicije) ==\n";
+    printValidityTableau(parse("(p -> q) -> (~q -> ~p)"));
+
+    std::cout << "\n== Tablo stablo (zadovoljivost) ==\n";
+    printSatisfiabilityTableau(parse("(p | q) & (~p | r)"));
+
     return 0;
 }
