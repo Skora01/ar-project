@@ -1,3 +1,8 @@
 build/
 *.o
 *.out
+
+# LaTeX medjufajlovi
+*.aux
+*.log
+*.toc
